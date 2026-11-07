@@ -79,6 +79,43 @@ def fetch_text_browser(url):
     return text
 
 
+def extract_section(t):
+    """
+    Schneidet aus dem Seitentext nur den Abschnitt eines Wettbewerbs heraus:
+    ab SECTION_START (z. B. "Halbmarathon") bis zum nächsten Wort aus SECTION_END
+    (z. B. "Marathon,Dreiviertelmarathon,Viertelmarathon").
+    Gesucht wird nach ganzen Wörtern, "Marathon" trifft also NICHT "Halbmarathon".
+    Kommt SECTION_START mehrfach vor (z. B. auch im Menü), wählt SECTION_OCCURRENCE
+    das n-te Vorkommen (Standard 1). Alle gefundenen Abschnitte stehen im Log.
+    """
+    start = normalize(env("SECTION_START"))
+    if not start:
+        return t  # keine Eingrenzung -> ganze Seite
+
+    ends = [normalize(e) for e in env("SECTION_END").split(",") if e.strip()]
+    starts = [m.end() for m in re.finditer(rf"\b{re.escape(start)}\b", t)]
+    if not starts:
+        raise RuntimeError(f'"{start}" nicht auf der Seite gefunden.')
+
+    sections = []
+    for s in starts:
+        end_pos = len(t)
+        for e in ends:
+            m = re.compile(rf"\b{re.escape(e)}\b").search(t, s)
+            if m:
+                end_pos = min(end_pos, m.start())
+        sections.append(t[s:end_pos])
+
+    for i, sec in enumerate(sections, 1):
+        print(f"--- Abschnitt {i} ---\n{sec[:300]}{' …' if len(sec) > 300 else ''}")
+
+    n = int(env("SECTION_OCCURRENCE", "1") or 1)
+    if n > len(sections):
+        raise RuntimeError(f"SECTION_OCCURRENCE={n}, aber nur {len(sections)} Abschnitt(e) gefunden.")
+    print(f">>> Geprüft wird Abschnitt {n}")
+    return sections[n - 1]
+
+
 def check_available(text):
     """True = Platz frei, False = kein Platz. Wirft Fehler bei fehlender Konfiguration."""
     t = normalize(text)
@@ -92,6 +129,11 @@ def check_available(text):
     # JS nicht geladen), lieber nichts melden.
     if len(t) < 200:
         raise RuntimeError(f"Seite verdächtig kurz ({len(t)} Zeichen) – evtl. USE_BROWSER=1 setzen?")
+
+    t = extract_section(t)
+    # Leerer/winziger Abschnitt = Struktur passt nicht -> kein Alarm, sondern Fehler
+    if no_spots and not spot and len(t.strip()) < 5:
+        raise RuntimeError("Halbmarathon-Abschnitt ist leer – SECTION_END/SECTION_OCCURRENCE prüfen.")
 
     if spot:
         return spot in t
