@@ -22,6 +22,9 @@ jobs:
       PAGE_URL: ${{ vars.PAGE_URL }}
       NO_SPOTS_TEXT: ${{ vars.NO_SPOTS_TEXT }}
       SPOT_TEXT: ${{ vars.SPOT_TEXT }}
+      SECTION_START: ${{ vars.SECTION_START }}
+      SECTION_END: ${{ vars.SECTION_END }}
+      SECTION_OCCURRENCE: ${{ vars.SECTION_OCCURRENCE }}
       USE_BROWSER: ${{ vars.USE_BROWSER }}
       REMIND_EVERY_RUNS: ${{ vars.REMIND_EVERY_RUNS }}
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
