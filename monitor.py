@@ -16,6 +16,11 @@ Konfiguration komplett über Umgebungsvariablen (in GitHub: Secrets / Variables)
   SPOT_TEXT           Text, der nur dasteht, wenn ein Platz frei ist,
                       z. B. "Halbmarathon" oder "In den Warenkorb".
                       -> Alarm, sobald dieser Text AUFTAUCHT.
+                      
+  SECTION_START: ${{ vars.SECTION_START }}
+  SECTION_END: ${{ vars.SECTION_END }}
+  SECTION_OCCURRENCE: ${{ vars.SECTION_OCCURRENCE }}
+  
 
   USE_BROWSER         "1" = Seite mit Headless-Chromium (Playwright) rendern.
                       Nötig, falls die Seite ihren Inhalt per JavaScript lädt.
