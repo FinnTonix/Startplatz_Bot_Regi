@@ -148,6 +148,7 @@ def check_available(text):
 def send_telegram(msg):
     token, chat_id = env("TELEGRAM_BOT_TOKEN"), env("TELEGRAM_CHAT_ID")
     if not (token and chat_id):
+        print("Telegram: übersprungen – TELEGRAM_BOT_TOKEN oder TELEGRAM_CHAT_ID ist leer (Secrets prüfen).")
         return False
     r = requests.post(
         f"https://api.telegram.org/bot{token}/sendMessage",
@@ -203,7 +204,8 @@ def main():
 
     # Testmodus: python monitor.py --test  -> schickt nur eine Testnachricht
     if "--test" in sys.argv:
-        notify(f"✅ Startplatz-Monitor Test ({now}) – Benachrichtigung funktioniert.\n{url}")
+        if not notify(f"✅ Startplatz-Monitor Test ({now}) – Benachrichtigung funktioniert.\n{url}"):
+            raise SystemExit("Testnachricht konnte nicht verschickt werden – siehe Log oben.")
         return
 
     try:
